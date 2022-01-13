@@ -17,34 +17,17 @@ public class Map {
 
 
     public Map() {
-        tilemap = createMap();
+        tilemap = fillWithPlains(6, 8);
     }
 
     public Map(int w, int h) {
-        tilemap = createMap(w, h);
-    }
-
-
-    /* Method createMap()
-    *  Default constructor initializes tilemap as
-    *  an 8x6 map filled with Plains tiles. */
-    public Tile[][] createMap() {
-        Tile[][] t = fillWithPlains(6, 8);
-        return t;
-    }
-
-    /* Method createMap(int, int)
-    *  Specifies the width and height of the tilemap
-    *  to be created. */
-    public Tile[][] createMap(int w, int h) {
-        // Swap width and height if w > h
         if (w > h) {
             int temp = w;
             w = h;
             h = temp;
         }
 
-        return fillWithPlains(w, h);
+        tilemap = fillWithPlains(w, h);
     }
 
     public Tile[][] getTilemap() {
