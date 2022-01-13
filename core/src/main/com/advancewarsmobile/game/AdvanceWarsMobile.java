@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+
 public class AdvanceWarsMobile extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture img;
