@@ -15,18 +15,11 @@ public class Map {
     private Texture cityTile;
     private Tile[][] tilemap;
 
+    private Map() {}
 
-    public Map() {
-        tilemap = fillWithPlains(6, 8);
-    }
-
-    public Map(int w, int h) {
-        if (w > h) {
-            int temp = w;
-            w = h;
-            h = temp;
-        }
-
+    public Map(Texture plainTile, Texture cityTile, int w, int h) {
+        this.plainTile = plainTile;
+        this.cityTile = cityTile;
         tilemap = fillWithPlains(w, h);
     }
 
@@ -39,15 +32,22 @@ public class Map {
     *  Plains tiles */
     private Tile[][] fillWithPlains(int w, int h) {
         Tile[][] t;
+
+        if (w == 0 || h == 0) {
+            System.out.println("Map size cannot be 0");
+            return null;
+        }
+
+        if (w > h) {
+            int temp = w;
+            w = h;
+            h = temp;
+        }
+
         try {
             t = new Tile[w][h];
         } catch(NegativeArraySizeException e) {
             System.out.println("Array size should not be negative");
-            return null;
-        }
-
-        if (w == 0 || h == 0) {
-            System.out.println("Map size cannot be 0");
             return null;
         }
 
