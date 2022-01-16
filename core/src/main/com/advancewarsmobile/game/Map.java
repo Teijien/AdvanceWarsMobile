@@ -1,6 +1,7 @@
 package com.advancewarsmobile.game;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.maps.tiled.TiledMap;
 
 /* Definition of Map class
 *
@@ -8,18 +9,19 @@ import com.badlogic.gdx.graphics.Texture;
 *  tile types and methods to display them. */
 public class Map {
     public enum Tile {
-        PLAINS,
-        CITY
+        PLAINS
     }
     private Texture plainTile;
     private Texture cityTile;
     private Tile[][] tilemap;
+    private TiledMap map;
 
     private Map() {}
 
-    public Map(Texture plainTile, Texture cityTile, int w, int h) {
+    public Map(Texture plainTile, Texture cityTile, TiledMap map, int w, int h) {
         this.plainTile = plainTile;
         this.cityTile = cityTile;
+        this.map = map;
         tilemap = fillWithPlains(w, h);
     }
 
