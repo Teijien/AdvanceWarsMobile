@@ -10,4 +10,8 @@ public abstract class Unit extends Sprite {
         super(texture);
         this.type = type;
     }
+
+    public void move() {
+
+    }
 }
