@@ -25,7 +25,9 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 	private Sprite infantry;
 
 	// Units
-	private Infantry unit;
+	private Unit unit;
+
+	private Unit.Stats infantryStats;
 
 	// Camera
 	private OrthogonalTiledMapRenderer renderer;
@@ -53,7 +55,10 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 		// Make a unit
 		infantry = new Sprite(new Texture(Gdx.files.internal("infantry.png")));
 
-		unit = new Infantry(infantry, "land");
+		// Initialize default stats
+		infantryStats = new Unit.Stats(1, 0, 3, 1, 1.5);
+
+		unit = new Unit(0, infantry, "land", new Unit.Stats(infantryStats));
 		unit.addListener(new MoveUnitListener());
 		unit.setPosition(64, 0);
 		stage.addActor(unit);
@@ -67,6 +72,7 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 		renderer.render();
 
 		stage.draw();
+
 		//renderer.getBatch().begin();	// We use the batch from the renderer to draw the sprites
 		//unit.draw(renderer.getBatch());	// using the same transformation matrix as the tile map
 		//renderer.getBatch().end();

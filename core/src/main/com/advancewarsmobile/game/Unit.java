@@ -6,13 +6,42 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 
 
-public abstract class Unit extends Actor {
+public class Unit extends Actor {
+    public static class Stats {
+        private int atk;
+        private int def;
+        private int mov;
+        private int range;
+        private double spd;
+
+
+        public Stats(Stats stats) {
+            this.atk = stats.atk;
+            this.def = stats.def;
+            this.mov = stats.mov;
+            this.range = stats.range;
+            this.spd = stats.spd;
+        }
+        public Stats(int atk, int def, int mov, int range, double spd) {
+            this.atk = atk;
+            this.def = def;
+            this.mov = mov;
+            this.range = range;
+            this.spd = spd;
+        }
+    }
+
+    private int team;
     private Sprite sprite;
+    private Stats stats;
     private final String type;
 
-    public Unit(Sprite sprite, String type) {
+
+    public Unit(int team, Sprite sprite, String type, Stats stats) {
+        this.team = team;
         this.sprite = sprite;
         this.type = type;
+        this.stats = stats;
         setBounds(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
     }
 
