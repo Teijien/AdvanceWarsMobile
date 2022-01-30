@@ -22,6 +22,7 @@ public class Unit extends Actor {
             this.range = stats.range;
             this.spd = stats.spd;
         }
+
         public Stats(int atk, int def, int mov, int range, double spd) {
             this.atk = atk;
             this.def = def;
@@ -38,11 +39,15 @@ public class Unit extends Actor {
 
 
     public Unit(int team, Sprite sprite, String type, Stats stats) {
+        float spriteWidth = sprite.getWidth();
+        float spriteHeight = sprite.getHeight();
+
         this.team = team;
         this.sprite = sprite;
         this.type = type;
         this.stats = stats;
         setBounds(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
+        setOrigin(spriteWidth / 2, spriteHeight / 2);
     }
 
     @Override
