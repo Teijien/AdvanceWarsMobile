@@ -7,12 +7,14 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+
+import java.util.LinkedList;
 
 
 public class AdvanceWarsMobile extends ApplicationAdapter {
@@ -49,17 +51,21 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 		camera.setToOrtho(false, WORLD_WIDTH, WORLD_HEIGHT);
 		viewport = new ExtendViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
 
-		stage = new Stage(viewport, renderer.getBatch());
-		Gdx.input.setInputProcessor(stage);
-
-		// Make a unit
+		// Stage setup
+		stage = new Stage(viewport, renderer.getBatch());	// We use the renderer's batch to keep
+		Gdx.input.setInputProcessor(stage);					// everything the stage renders the same
+															// scale as the tilemap.
+		// Designate unit sprite textures
 		infantry = new Sprite(new Texture(Gdx.files.internal("infantry.png")));
 
 		// Initialize default stats
 		infantryStats = new Unit.Stats(1, 0, 3, 1, 1.5);
 
+		// Make a unit
 		unit = new Unit(0, infantry, "land", new Unit.Stats(infantryStats));
-		unit.addListener(new MoveUnitListener());
+		unit.addListener(new MoveUnitListener(
+				(TiledMapTileLayer) map.getLayers().get(0), new LinkedList<>()
+		));
 		unit.setPosition(64, 0);
 		stage.addActor(unit);
 	}
@@ -71,11 +77,8 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 		renderer.setView(camera);	// Sets the placement of the map under the camera
 		renderer.render();
 
-		stage.draw();
-
-		//renderer.getBatch().begin();	// We use the batch from the renderer to draw the sprites
-		//unit.draw(renderer.getBatch());	// using the same transformation matrix as the tile map
-		//renderer.getBatch().end();
+		stage.draw();	// Stage already uses the renderer's batch to draw to, so we don't need to
+						// specify it here.
 	}
 
 	/* Viewport gets updated instead of camera, as all control

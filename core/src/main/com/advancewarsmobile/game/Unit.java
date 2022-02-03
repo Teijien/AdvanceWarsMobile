@@ -30,6 +30,8 @@ public class Unit extends Actor {
             this.range = range;
             this.spd = spd;
         }
+
+        public int getMov() { return mov; }
     }
 
     private int team;
@@ -39,15 +41,11 @@ public class Unit extends Actor {
 
 
     public Unit(int team, Sprite sprite, String type, Stats stats) {
-        float spriteWidth = sprite.getWidth();
-        float spriteHeight = sprite.getHeight();
-
         this.team = team;
         this.sprite = sprite;
         this.type = type;
         this.stats = stats;
         setBounds(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getHeight());
-        setOrigin(spriteWidth / 2, spriteHeight / 2);
     }
 
     @Override
@@ -71,4 +69,6 @@ public class Unit extends Actor {
         super.moveBy(x, y);
         sprite.setPosition(this.getX(), this.getY());
     }
+
+    public Stats getStats() { return stats; }
 }
