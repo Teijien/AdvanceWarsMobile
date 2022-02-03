@@ -47,34 +47,61 @@ public class MoveUnitListener extends InputListener {
 
         actor.moveBy(x - (actor.getWidth() / 2), y - (actor.getHeight() / 2));
 
-        if (!cell.equals(path.getLast())) {
-            System.out.println("Moved to new tile!");
-            if (!path.contains(cell)) {
-                if (actor.getStats().getMov() > path.size() - 1) {
-                    path.add(cell);
-                    System.out.println("Added tile to path");
-                } else {
-                    LinkedList<Vector2> temp = new LinkedList<>();
-                    temp.add(path.getFirst());
-                    temp = getNewPath(temp, cell, actor.getStats().getMov(), 1);
+        // Guard statements
+        if (!inBounds(cell)) { return; }
+        if (cell.equals(path.getLast())) { return; }
 
-                    if (temp == null) {
-                        System.out.println("Not reachable");
-                    } else {
-                        path = temp;
-                        System.out.println("Recalculated path");
-                    }
-                }
-            } else {
-                // Remove all elements after currentCell
-                while (path.indexOf(cell) < path.size() - 1) {
-                    path.removeLast();
-                }
-            }
+        System.out.println("Moved to new tile!");
+
+        // Remove all elements after current cell if it already exists in the path
+        if (path.contains(cell)) {
+            removeCellsAfter(cell);
             System.out.println();
+            return;
         }
+
+        checkPath(actor, cell);
+
+        System.out.println();
     }
 
+    @Override
+    public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+        Unit actor = (Unit) event.getTarget();
+        Vector2 cell = path.getLast();
+
+        // Place the unit in the last cell in the path
+        actor.setPosition(
+                cell.x * tiles.getTileWidth(),
+                (tiles.getHeight() * tiles.getTileHeight())
+                        - ((cell.y + 1) * tiles.getTileHeight())
+        );
+    }
+
+
+    /* Bounds Checking */
+    private boolean inBounds(Vector2 cell) {
+        if (!inXBounds(cell)) { return false; }
+        if (!inYBounds(cell)) { return false; }
+
+        return true;
+    }
+
+    private boolean inXBounds(Vector2 cell) {
+        if (cell.x < 0) { return false; }
+        if (cell.x > tiles.getWidth() - 1) { return false; }
+
+        return true;
+    }
+
+    private boolean inYBounds(Vector2 cell) {
+        if (cell.y < 0) { return false; }
+        if (cell.y > tiles.getHeight() - 1) { return false; }
+
+        return true;
+    }
+
+    /* Cell Logic */
     private Vector2 getCurrentCell(InputEvent event) {
         Actor actor = event.getTarget();
         Vector3 cursorPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
@@ -87,6 +114,19 @@ public class MoveUnitListener extends InputListener {
         cellY = (screenHeight - (int) cursorPos.y) / tiles.getTileHeight();
 
         return new Vector2(cellX, cellY);
+    }
+
+
+    /* Path */
+
+    // Checks if a cell can be added to the path, or if the path needs to be recalculated
+    private void checkPath(Unit actor, Vector2 cell) {
+        if (actor.getStats().getMov() > path.size() - 1) {
+            path.add(cell);
+            System.out.println("Added tile to path");
+        } else {
+            recalculatePath(cell, actor);
+        }
     }
 
     private LinkedList<Vector2> getNewPath(LinkedList<Vector2> path, Vector2 targetCell,
@@ -124,5 +164,29 @@ public class MoveUnitListener extends InputListener {
         }
 
         return newPath;
+    }
+
+    private void recalculatePath(Vector2 cell, Unit actor) {
+        LinkedList<Vector2> temp = new LinkedList<>();
+        temp.add(path.getFirst());
+        temp = getNewPath(temp, cell, actor.getStats().getMov(), 1);
+
+        replacePath(temp);
+    }
+
+    // Replaces the current path if the current cell is not a valid space to move to
+    private void replacePath(LinkedList<Vector2> tempPath) {
+        if (tempPath == null) {
+            System.out.println("Not reachable");
+        } else {
+            path = tempPath;
+            System.out.println("Recalculated path");
+        }
+    }
+
+    private void removeCellsAfter(Vector2 cell) {
+        while (path.indexOf(cell) < path.size() - 1) {
+            path.removeLast();
+        }
     }
 }
