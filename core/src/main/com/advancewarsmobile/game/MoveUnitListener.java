@@ -101,7 +101,7 @@ public class MoveUnitListener extends InputListener {
         return true;
     }
 
-    /* Cell Logic */
+    /* Cell */
     private Vector2 getCurrentCell(InputEvent event) {
         Actor actor = event.getTarget();
         Vector3 cursorPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
@@ -133,37 +133,66 @@ public class MoveUnitListener extends InputListener {
                                            int unitMov, int moved) {
         LinkedList<Vector2> newPath;
 
+        /*
         // Guard clause checks if we're still within the movement range
         if (path == null || moved > unitMov) {
             return null;
         }
+        //*/
 
         newPath = new LinkedList<>(path);
 
+        for (int i = 1; i <= unitMov; i++) {
+            if (newPath.getLast().equals(targetCell)) { return newPath; }
+
+            if (newPath.getLast().x > targetCell.x) {
+                newPath.add(new Vector2(newPath.getLast().x - 1, newPath.getLast().y));
+            } else if (newPath.getLast().x < targetCell.x) {
+                newPath.add(new Vector2(newPath.getLast().x + 1, newPath.getLast().y));
+            } else if (newPath.getLast().y > targetCell.y) {
+                newPath.add(new Vector2(newPath.getLast().x, newPath.getLast().y - 1));
+            } else if (newPath.getLast().y < targetCell.y) {
+                newPath.add(new Vector2(newPath.getLast().x, newPath.getLast().y + 1));
+            }
+        }
+
+        if (newPath.getLast().equals(targetCell)) { return newPath; }
+
+        return null;
+
+        // The below code does bounds checking, but we don't use inBounds()
+        // because we need to return a different path for each outcome.
+        // Below solution is recursive, but inefficient space-wise due to repeatedly making
+        // new lists
+
+        /*
         // Move on x-axis
         if (newPath.getLast().x > targetCell.x) {
             newPath.add(new Vector2(newPath.getLast().x - 1, newPath.getLast().y));
             newPath = getNewPath(newPath, targetCell, unitMov, moved + 1);
             return newPath;
-        } else if (newPath.getLast().x < targetCell.x) {
+        }
+        if (newPath.getLast().x < targetCell.x) {
             newPath.add(new Vector2(newPath.getLast().x + 1, newPath.getLast().y));
             newPath = getNewPath(newPath, targetCell, unitMov, moved + 1);
             return newPath;
         }
-
 
         // Move on y-axis
         if (newPath.getLast().y > targetCell.y) {
             newPath.add(new Vector2(newPath.getLast().x, newPath.getLast().y - 1));
             newPath = getNewPath(newPath, targetCell, unitMov, moved + 1);
             return newPath;
-        } else if (newPath.getLast().y < targetCell.y) {
+        }
+        if (newPath.getLast().y < targetCell.y) {
             newPath.add(new Vector2(newPath.getLast().x, newPath.getLast().y + 1));
             newPath = getNewPath(newPath, targetCell, unitMov, moved + 1);
             return newPath;
         }
 
         return newPath;
+
+        //*/
     }
 
     private void recalculatePath(Vector2 cell, Unit actor) {
