@@ -20,14 +20,17 @@ import java.util.LinkedList;
 public class AdvanceWarsMobile extends ApplicationAdapter {
 	private final float WORLD_WIDTH = 96;
 	private final float WORLD_HEIGHT = 128;
+	private final int TILE_SIZE = 16;
 	private final String MAP_NAME = "map.tmx";
 
 	// Graphics
 	private TiledMap map;
-	private Sprite infantry;
+	private Texture infantry;
 
 	// Units
-	private Unit unit;
+	private Unit[] redTeam;
+	private Unit[] blueTeam;
+	//private Unit unit;
 
 	private Unit.Stats infantryStats;
 
@@ -39,6 +42,9 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 	// Stage
 	private Stage stage;
 
+	// Controllers
+	private MoveUnitListener moveUnitListener;
+
 
 	@Override
 	public void create () {
@@ -47,8 +53,9 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 
 		// Camera and Renderer init
 		renderer = new OrthogonalTiledMapRenderer(map);	// DO NOT SET "unitscale"! Messes with calcs
-		camera = new OrthographicCamera(WORLD_WIDTH, WORLD_HEIGHT);
-		camera.setToOrtho(false, WORLD_WIDTH, WORLD_HEIGHT);
+
+		camera = cameraInit(WORLD_WIDTH, WORLD_HEIGHT, false);
+
 		viewport = new ExtendViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
 
 		// Stage setup
@@ -56,18 +63,31 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 		Gdx.input.setInputProcessor(stage);					// everything the stage renders the same
 															// scale as the tilemap.
 		// Designate unit sprite textures
-		infantry = new Sprite(new Texture(Gdx.files.internal("infantry.png")));
+		infantry = new Texture(Gdx.files.internal("infantry.png"));
 
 		// Initialize default stats
 		infantryStats = new Unit.Stats(1, 0, 3, 1, 1.5);
 
+		// Listeners
+		moveUnitListener = new MoveUnitListener(
+				(TiledMapTileLayer) map.getLayers().get(0), new LinkedList<>());
+
 		// Make a unit
-		unit = new Unit(0, infantry, "land", new Unit.Stats(infantryStats));
-		unit.addListener(new MoveUnitListener(
-				(TiledMapTileLayer) map.getLayers().get(0), new LinkedList<>()
-		));
-		unit.setPosition(64, 0);
-		stage.addActor(unit);
+		redTeam = makeUnits(5, 0, "land", infantry, infantryStats);
+		blueTeam = makeUnits(5, 1, "land", infantry, infantryStats);
+
+		addListeners(redTeam, moveUnitListener);
+		addListeners(blueTeam, moveUnitListener);
+
+		setRedUnitPositions(redTeam, TILE_SIZE);
+		setBlueUnitPositions(blueTeam, TILE_SIZE);
+		//unit = new Unit(0, infantry, "land", infantryStats);
+		//unit.setPosition(64, 0);
+		//unit.addListener(moveUnitListener);
+
+		//stage.addActor(unit);
+		addActorsToStage(redTeam);
+		addActorsToStage(blueTeam);
 	}
 
 	@Override
@@ -98,5 +118,46 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 		map.dispose();
 		renderer.dispose();
 		stage.dispose();
+	}
+
+	private OrthographicCamera cameraInit(float width, float height, boolean yDown) {
+		OrthographicCamera newCamera = new OrthographicCamera(width, height);
+		newCamera.setToOrtho(yDown, width, height);
+
+		return newCamera;
+	}
+
+	private Unit[] makeUnits(int size, int team, String type, Texture sprite, Unit.Stats stats) {
+		Unit[] units = new Unit[size];
+
+		for (int i = 0; i < size; i++) {
+			units[i] = new Unit(team, new Sprite(sprite), type, stats);
+		}
+
+		return units;
+	}
+
+	private void addListeners(Unit[] units, MoveUnitListener moveUnitListener) {
+		for (Unit unit : units) {
+			unit.addListener(moveUnitListener);
+		}
+	}
+
+	private void setRedUnitPositions(Unit[] units, int tileSize) {
+		for (int i = 0; i < units.length; i++) {
+			units[i].setPosition(48 + i / 2 * tileSize, (i + 1) % 2 * tileSize);
+		}
+	}
+
+	private void setBlueUnitPositions(Unit[] units, int tileSize) {
+		for (int i = 0; i < units.length; i++) {
+			units[i].setPosition((i + 1) / 2 * tileSize, (i % 2 + 6) * tileSize);
+		}
+	}
+
+	private void addActorsToStage(Unit[] units) {
+		for (Unit unit : units) {
+			stage.addActor(unit);
+		}
 	}
 }

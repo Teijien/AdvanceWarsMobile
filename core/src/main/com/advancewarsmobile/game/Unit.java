@@ -49,9 +49,7 @@ public class Unit extends Actor {
     }
 
     @Override
-    public void draw(Batch batch, float parentAlpha) {
-        sprite.draw(batch);
-    }
+    public void draw(Batch batch, float parentAlpha) { sprite.draw(batch); }
 
     @Override
     public void setPosition(float x, float y) {

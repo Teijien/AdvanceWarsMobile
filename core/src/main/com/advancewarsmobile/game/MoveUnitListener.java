@@ -80,25 +80,28 @@ public class MoveUnitListener extends InputListener {
 
 
     /* Bounds Checking */
+    private boolean nextToTile(Vector2 origin, Vector2 target) {
+        if (origin.equals(target)) { return false; }
+
+        if (origin.x + 1 == target.x || origin.x - 1 == target.x) { return true; }
+        return origin.y + 1 == target.y || origin.y - 1 == target.y;
+    }
+
     private boolean inBounds(Vector2 cell) {
         if (!inXBounds(cell)) { return false; }
-        if (!inYBounds(cell)) { return false; }
-
-        return true;
+        return inYBounds(cell);
     }
 
     private boolean inXBounds(Vector2 cell) {
         if (cell.x < 0) { return false; }
-        if (cell.x > tiles.getWidth() - 1) { return false; }
 
-        return true;
+        return !(cell.x > tiles.getWidth() - 1);
     }
 
     private boolean inYBounds(Vector2 cell) {
         if (cell.y < 0) { return false; }
-        if (cell.y > tiles.getHeight() - 1) { return false; }
 
-        return true;
+        return !(cell.y > tiles.getHeight() - 1);
     }
 
     /* Cell */
@@ -121,16 +124,30 @@ public class MoveUnitListener extends InputListener {
 
     // Checks if a cell can be added to the path, or if the path needs to be recalculated
     private void checkPath(Unit actor, Vector2 cell) {
+        if (!(actor.getStats().getMov() > path.size() - 1)) {
+            recalculatePath(cell, actor);
+            return;
+        }
+
+        if (nextToTile(path.getLast(), cell)) {
+            path.add(cell);
+            System.out.println("Added tile to path");
+        } else {
+            recalculatePath(cell, actor);
+        }
+        /*
         if (actor.getStats().getMov() > path.size() - 1) {
             path.add(cell);
             System.out.println("Added tile to path");
         } else {
             recalculatePath(cell, actor);
         }
+
+         */
     }
 
     private LinkedList<Vector2> getNewPath(LinkedList<Vector2> path, Vector2 targetCell,
-                                           int unitMov, int moved) {
+                                           int unitMov) {
         LinkedList<Vector2> newPath;
 
         /*
@@ -198,7 +215,7 @@ public class MoveUnitListener extends InputListener {
     private void recalculatePath(Vector2 cell, Unit actor) {
         LinkedList<Vector2> temp = new LinkedList<>();
         temp.add(path.getFirst());
-        temp = getNewPath(temp, cell, actor.getStats().getMov(), 1);
+        temp = getNewPath(temp, cell, actor.getStats().getMov());
 
         replacePath(temp);
     }
