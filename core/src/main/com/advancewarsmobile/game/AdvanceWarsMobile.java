@@ -2,6 +2,7 @@ package com.advancewarsmobile.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -10,6 +11,8 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
@@ -28,11 +31,11 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 	private Texture infantry;
 
 	// Units
-	private Unit[] redTeam;
-	private Unit[] blueTeam;
-	//private Unit unit;
+	private BasicUnit[] redTeam;
+	private BasicUnit[] blueTeam;
+	//private Unit basicUnit;
 
-	private Unit.Stats infantryStats;
+	private Stats infantryStats;
 
 	// Camera
 	private OrthogonalTiledMapRenderer renderer;
@@ -43,7 +46,11 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 	private Stage stage;
 
 	// Controllers
-	private MoveUnitListener moveUnitListener;
+	private MapListener mapListener;
+
+	private Map gameMap = new GameMap(6, 8);	// Model
+	private IView view;	// View
+	private InputListener moveListener;
 
 
 	@Override
@@ -62,42 +69,56 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 		stage = new Stage(viewport, renderer.getBatch());	// We use the renderer's batch to keep
 		Gdx.input.setInputProcessor(stage);					// everything the stage renders the same
 															// scale as the tilemap.
-		// Designate unit sprite textures
+		// Designate basicUnit sprite textures
 		infantry = new Texture(Gdx.files.internal("infantry.png"));
 
 		// Initialize default stats
-		infantryStats = new Unit.Stats(1, 0, 3, 1, 1.5);
+		infantryStats = new BasicStats(100, 1, 0, 3, 1, 1.5);
+
+		view = new View(renderer, viewport, stage);
+		moveListener = new MapListener(
+				gameMap, new BasePath(new LinkedList<>()),
+				(TiledMapTileLayer) map.getLayers().get(0));
+		Actor actor = new UnitActor(new Sprite(infantry));
+		actor.addListener(moveListener);
+		actor.setPosition(48, 0);
+		gameMap.setUnit(
+				new BasicUnit(0, new BasicStats((BasicStats) infantryStats)),
+				3, 7
+		);
+
+		view.addActor(actor);
 
 		// Listeners
-		moveUnitListener = new MoveUnitListener(
-				(TiledMapTileLayer) map.getLayers().get(0), new LinkedList<>());
+		//mapListener = new MapListener(
+		//		(TiledMapTileLayer) map.getLayers().get(0), new LinkedList<>());
 
-		// Make a unit
-		redTeam = makeUnits(5, 0, "land", infantry, infantryStats);
-		blueTeam = makeUnits(5, 1, "land", infantry, infantryStats);
+		// Make a basicUnit
+		//redTeam = makeUnits(5, 0, "land", infantry, infantryStats);
+		//blueTeam = makeUnits(5, 1, "land", infantry, infantryStats);
 
-		addListeners(redTeam, moveUnitListener);
-		addListeners(blueTeam, moveUnitListener);
+		//addListeners(redTeam, mapListener);
+		//addListeners(blueTeam, mapListener);
 
-		setRedUnitPositions(redTeam, TILE_SIZE);
-		setBlueUnitPositions(blueTeam, TILE_SIZE);
-		//unit = new Unit(0, infantry, "land", infantryStats);
-		//unit.setPosition(64, 0);
-		//unit.addListener(moveUnitListener);
+		//setRedUnitPositions(redTeam, TILE_SIZE);
+		//setBlueUnitPositions(blueTeam, TILE_SIZE);
+		//basicUnit = new Unit(0, infantry, "land", infantryStats);
+		//basicUnit.setPosition(64, 0);
+		//basicUnit.addListener(moveUnitListener);
 
-		//stage.addActor(unit);
-		addActorsToStage(redTeam);
-		addActorsToStage(blueTeam);
+		//stage.addActor(basicUnit);
+		//addActorsToStage(redTeam);
+		//addActorsToStage(blueTeam);
 	}
 
 	@Override
 	public void render () {
 		ScreenUtils.clear(Color.BLACK);	// Screen must be refreshed before redrawing
 
-		renderer.setView(camera);	// Sets the placement of the map under the camera
-		renderer.render();
+		view.setView(camera);	// Sets the placement of the map under the camera
+		view.render();
 
-		stage.draw();	// Stage already uses the renderer's batch to draw to, so we don't need to
+		view.draw();	// Stage already uses the renderer's batch to draw to, so we don't need to
 						// specify it here.
 	}
 
@@ -105,7 +126,7 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 	 * of camera passes through viewport */
 	@Override
 	public void resize(int width, int height) {
-		viewport.update(width, height);
+		view.updateViewport(width, height);
 
 		// Camera needs to be reset due Stage moving the camera
 		// Also helps fix graphical issues when resizing window on PC
@@ -125,39 +146,5 @@ public class AdvanceWarsMobile extends ApplicationAdapter {
 		newCamera.setToOrtho(yDown, width, height);
 
 		return newCamera;
-	}
-
-	private Unit[] makeUnits(int size, int team, String type, Texture sprite, Unit.Stats stats) {
-		Unit[] units = new Unit[size];
-
-		for (int i = 0; i < size; i++) {
-			units[i] = new Unit(team, new Sprite(sprite), type, stats);
-		}
-
-		return units;
-	}
-
-	private void addListeners(Unit[] units, MoveUnitListener moveUnitListener) {
-		for (Unit unit : units) {
-			unit.addListener(moveUnitListener);
-		}
-	}
-
-	private void setRedUnitPositions(Unit[] units, int tileSize) {
-		for (int i = 0; i < units.length; i++) {
-			units[i].setPosition(48 + i / 2 * tileSize, (i + 1) % 2 * tileSize);
-		}
-	}
-
-	private void setBlueUnitPositions(Unit[] units, int tileSize) {
-		for (int i = 0; i < units.length; i++) {
-			units[i].setPosition((i + 1) / 2 * tileSize, (i % 2 + 6) * tileSize);
-		}
-	}
-
-	private void addActorsToStage(Unit[] units) {
-		for (Unit unit : units) {
-			stage.addActor(unit);
-		}
 	}
 }

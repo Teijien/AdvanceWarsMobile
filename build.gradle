@@ -88,9 +88,18 @@ project(":html") {
 project(":core") {
     apply plugin: "java-library"
 
-
     dependencies {
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$jUnitVersion"
+    }
+
+    test {
+        useJUnitPlatform()
+
+        dependsOn 'cleanTest'
+
+        testLogging {
+            events "passed", "skipped", "failed"
+        }
     }
 }
