@@ -10,9 +10,11 @@ public record BasicUnit(int team, Stats stats) implements Unit {
     }
 
     public void takeDmg(int atk) {
+        int dmg = hp() - (atk - stats.getDef());
         if (stats.getDef() <= atk) {
-            stats.setHp(stats.getHp() - (atk - stats.getDef()));
+            stats.setHp(dmg);
         }
+        System.out.println(team + " unit took " + (atk - stats.getDef()) + " damage! HP = " + hp());
     }
 
     public Stats getStats() {

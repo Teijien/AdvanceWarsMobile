@@ -5,7 +5,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 
-public class Cell implements ICell{
+public class Cell implements ICell {
     private int x;
     private int y;
 
@@ -50,16 +50,6 @@ public class Cell implements ICell{
         return inYBounds(tiles);
     }
 
-    private boolean inXBounds(TiledMapTileLayer tiles) {
-        if (x < 0) { return false; }
-        return !(x > tiles.getWidth() - 1);
-    }
-
-    private boolean inYBounds(TiledMapTileLayer tiles) {
-        if (y < 0) { return false; }
-        return !(y > tiles.getHeight() - 1);
-    }
-
     public boolean equals(ICell cell) {
         return this.x == cell.x() && this.y == cell.y();
     }
@@ -69,4 +59,15 @@ public class Cell implements ICell{
     }
 
     public int y() { return y; }
+
+
+    private boolean inXBounds(TiledMapTileLayer tiles) {
+        if (x < 0) { return false; }
+        return !(x > tiles.getWidth() - 1);
+    }
+
+    private boolean inYBounds(TiledMapTileLayer tiles) {
+        if (y < 0) { return false; }
+        return !(y > tiles.getHeight() - 1);
+    }
 }

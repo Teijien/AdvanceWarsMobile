@@ -8,12 +8,14 @@ public class MapListener extends InputListener {
     private final Map map;
     private final Path path;
     private final TiledMapTileLayer tiles;
+    private final IView view;
 
-    public MapListener(Map map, Path path, TiledMapTileLayer tiles) {
+    public MapListener(Map map, Path path, TiledMapTileLayer tiles, View view) {
         super();
         this.map = map;
         this.path = path;
         this.tiles = tiles;
+        this.view = view;
     }
 
     @Override
@@ -40,6 +42,8 @@ public class MapListener extends InputListener {
                 .moveBy(x - (event.getTarget().getWidth() / 2),
                         y - (event.getTarget().getHeight() / 2));
 
+        if (map.unitHere(cell.x(), cell.y())) { return; }
+
         if (!validateCell(cell, tiles)) { return; }
 
         if (path.removeCellsAfter(cell)) { return; }
@@ -58,9 +62,23 @@ public class MapListener extends InputListener {
 
     @Override
     public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+        Cell cell = new Cell(event, tiles);
+
         if (!path.getFirst().equals(path.getLast())) {
             map.moveUnit(path.getFirst(), path.getLast());
+            view.moveActor(path.getFirst(), path.getLast());
         }
+
+        if (cell.nextToCell(path.getLast()) && map.unitHere(cell.x(), cell.y())) {
+            map.getUnit(path.getLast().x(), path.getLast().y())
+                    .attackUnit(map.getUnit(cell.x(), cell.y()));
+
+            if (map.getUnit(cell.x(), cell.y()).hp() <= 0) {
+                map.deleteUnit(cell.x(), cell.y());
+                view.deleteActor(cell.x(), cell.y());
+            }
+        }
+
         event.getTarget()
                 .setPosition(
                         path.getLast().x() * tiles.getTileWidth(),

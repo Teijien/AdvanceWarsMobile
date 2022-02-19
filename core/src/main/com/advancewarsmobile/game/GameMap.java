@@ -7,7 +7,6 @@ public class GameMap implements Map {
         map = new Unit[cols][rows];
     }
 
-    @Override
     public void moveUnit(ICell origin, ICell destination) {
         validateCells(origin, destination);
 
@@ -15,20 +14,31 @@ public class GameMap implements Map {
         deleteUnit(origin.x(), origin.y());
     }
 
-    @Override
     public boolean unitHere(int col, int row) { return map[col][row] != null; }
 
-    @Override
     public Unit getUnit(int col, int row) { return map[col][row]; }
 
-    @Override
     public void setUnit(Unit unit, int col, int row) {
         map[col][row] = unit;
     }
 
-    @Override
     public void deleteUnit(int col, int row) {
         map[col][row] = null;
+    }
+
+    public void battleUnits(ICell origin, ICell target) {
+        Unit attacker = getUnit(origin.x(), origin.y());
+        Unit defender = getUnit(target.x(), target.y());
+
+        attacker.attackUnit(defender);
+
+        if (attacker.hp() <= 0) {
+            deleteUnit(origin.x(), origin.y());
+        }
+
+        if (defender.hp() <= 0) {
+            deleteUnit(target.x(), target.y());
+        }
     }
 
     private void validateCells(ICell origin, ICell destination) {
